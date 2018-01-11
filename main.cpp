@@ -73,7 +73,7 @@ int main()
     // input
     f16_U.n_nc = 0.0f;
     f16_U.n_xc = 0.0f;
-    f16_U.mu_dotc = 3.14f/2.0f;
+    f16_U.mu_dotc = 2.0f;
 
     // holds the simulation steps
     unsigned int k=0;
