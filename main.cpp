@@ -1,16 +1,7 @@
-/** Example 004 Movement
-
-This Tutorial shows how to move and animate SceneNodes. The
-basic concept of SceneNodeAnimators is shown as well as manual
-movement of nodes using the keyboard.  We'll demonstrate framerate
-independent movement, which means moving by an amount dependent
-on the duration of the last run of the Irrlicht loop.
-
-Example 19.MouseAndJoystick shows how to handle those kinds of input.
-
-As always, I include the header files, use the irr namespace,
-and tell the linker to link with the .lib file.
+/** ACA::Arena
+haiyinpiao@qq.com
 */
+
 #ifdef _MSC_VER
 // We'll also define this to stop MSVC complaining about sprintf().
 #define _CRT_SECURE_NO_WARNINGS
@@ -22,6 +13,7 @@ and tell the linker to link with the .lib file.
 #include <cstdio>
 #include <ctime>
 #include <iostream>
+
 
 extern "C"
 {
@@ -66,14 +58,14 @@ private:
 	bool KeyIsDown[KEY_KEY_CODES_COUNT];
 };
 
-int main()
+int main(int argc, char *argv[])
 {
     f16_initialize();
 
     // input
-    f16_U.n_nc = 5.0f;
-    f16_U.n_xc = 0.0f;
-    f16_U.mu_dotc = 0.1f;
+    f16_U.n_nc = 1.3f;
+    f16_U.n_xc = 1.0f;
+    f16_U.mu_dotc = 0.0f;
 
     // holds the simulation steps
     unsigned int k=0;
@@ -88,6 +80,9 @@ int main()
 
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
+
+    //data display fonts
+    gui::IGUIFont* font = device->getGUIEnvironment()->getBuiltInFont();
 
     // add light
     scene::ISceneNode* plight_node = smgr->addLightSceneNode(0, core::vector3df(10000,10000,10000),
@@ -112,7 +107,7 @@ int main()
 		anms->setFrameLoop(0, 13);
 		anms->setAnimationSpeed(15);
 
-        anms->setScale(core::vector3df(1000.f,1000.f,1000.f));
+        anms->setScale(core::vector3df(2000.f,2000.f,2000.f));
         /*anms->setRotation(core::vector3df(0,0,0));
         anms->setPosition(core::vector3df(0,0,0));*/
 //		anms->setMaterialTexture(0, driver->getTexture("../../media/sydney.bmp"));
@@ -122,9 +117,9 @@ int main()
                 "../irrlicht-1.8.4/media/terrain-heightmap.bmp",
                 0,                  // parent node
                 -1,                 // node id
-                core::vector3df(0.f, 0.f, 0.f),     // position
+                core::vector3df(-40000.f, 0.f, -20000.f),     // position
                 core::vector3df(90.f, 0.f, 0.f),     // rotation
-                core::vector3df(200.f, 8.4f, 200.f),  // scale
+                core::vector3df(300.f, 20.4f, 300.f),  // scale
                 video::SColor ( 180, 180, 180, 180 ),   // vertexColor
                 5,                  // maxLOD
                 scene::ETPS_17,             // patchSize
@@ -148,7 +143,8 @@ int main()
 	person shooter style camera and make the mouse cursor invisible.
 	*/
     //scene::ICameraSceneNode* camera=smgr->addCameraSceneNodeFPS();
-    scene::ICameraSceneNode* camera=smgr->addCameraSceneNode(0, core::vector3df(0,0,-5000), core::vector3df(5000,5000,0));
+    scene::ICameraSceneNode* camera=smgr->addCameraSceneNode(0, core::vector3df(30000,-0,-6000), core::vector3df(0,0,0));
+    camera->setUpVector( core::vector3df(0,0,-1) );
     //camera->setRotation(core::vector3df(0,0,0.0f));
     device->getCursorControl()->setVisible(false);
     camera->setFarValue(142000.0f);
@@ -185,15 +181,23 @@ int main()
             f16_step();
 
             anms->setRotation(core::vector3df(mu*57.3+180,gamma*57.3,psi*57.3));
-            anms->setPosition(core::vector3df(x+5000,y+5000,z));
+            anms->setPosition(core::vector3df(x+5000,y+5000,z-2000));
 
             g_elpstime=0;
         }
 
-        driver->beginScene(true, true, video::SColor(255,255,255,255));
+        driver->beginScene(true, true, video::SColor(80,80,80,80));
 
 		smgr->drawAll(); // draw the 3d scene
 		device->getGUIEnvironment()->drawAll(); // draw the gui environment (the logo)
+
+        // draw flight parameters text.
+        if (font)
+        {
+            font->draw(L"This demo shows a hyper real-time f-16 dynamics simulation.\n haiyinpiao@qq.com.\n %f %f %f, x,y,z\n %f %f %f, x,y,z\n %f %f %f, x,y,z\n %f %f %f, x,y,z",
+                core::rect<s32>(100,100,800,400),
+                video::SColor(255,255,255,255));
+        }
 
 		driver->endScene();
 
