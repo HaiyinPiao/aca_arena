@@ -71,9 +71,9 @@ int main()
     f16_initialize();
 
     // input
-    f16_U.n_nc = 0.0f;
+    f16_U.n_nc = 5.0f;
     f16_U.n_xc = 0.0f;
-    f16_U.mu_dotc = 2.0f;
+    f16_U.mu_dotc = 0.1f;
 
     // holds the simulation steps
     unsigned int k=0;
@@ -81,13 +81,17 @@ int main()
 	MyEventReceiver receiver;
 
     IrrlichtDevice* device = createDevice(video::EDT_OPENGL,
-            core::dimension2d<u32>(1440, 960), 16, false, false, false, &receiver);
+            core::dimension2d<u32>(1024, 768), 16, false, false, false, &receiver);
 
 	if (device == 0)
 		return 1; // could not create selected driver.
 
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
+
+    // add light
+    scene::ISceneNode* plight_node = smgr->addLightSceneNode(0, core::vector3df(10000,10000,10000),
+                                                             video::SColorf(1.0f, 0.6f, 0.7f, 1.0f), 1000000.0f);
 
 	scene::IAnimatedMeshSceneNode* anms =
         smgr->addAnimatedMeshSceneNode(smgr->getMesh("../aca_arena/T50-airframe.3ds"));
@@ -108,20 +112,46 @@ int main()
 		anms->setFrameLoop(0, 13);
 		anms->setAnimationSpeed(15);
 
-        anms->setScale(core::vector3df(300.f,300.f,300.f));
+        anms->setScale(core::vector3df(1000.f,1000.f,1000.f));
         /*anms->setRotation(core::vector3df(0,0,0));
         anms->setPosition(core::vector3df(0,0,0));*/
 //		anms->setMaterialTexture(0, driver->getTexture("../../media/sydney.bmp"));
 
 	}
+    scene::ITerrainSceneNode* terrain = smgr->addTerrainSceneNode(
+                "../irrlicht-1.8.4/media/terrain-heightmap.bmp",
+                0,                  // parent node
+                -1,                 // node id
+                core::vector3df(0.f, 0.f, 0.f),     // position
+                core::vector3df(90.f, 0.f, 0.f),     // rotation
+                core::vector3df(200.f, 8.4f, 200.f),  // scale
+                video::SColor ( 180, 180, 180, 180 ),   // vertexColor
+                5,                  // maxLOD
+                scene::ETPS_17,             // patchSize
+                4                   // smoothFactor
+                );
+
+    terrain->setMaterialFlag(video::EMF_LIGHTING, false);
+    /*terrain->setMaterialTexture(0,
+                                driver->getTexture("../irrlicht-1.8.4/media/terrain-texture.jpg"));*/
+    terrain->setMaterialTexture(1,
+                                driver->getTexture("../irrlicht-1.8.4/media/detailmap3.jpg"));
+    terrain->setMaterialType(video::EMT_DETAIL_MAP);
+    terrain->scaleTexture(1.0f, 20.0f);
+
+    terrain->setMaterialFlag(video::EMF_WIREFRAME,
+            !terrain->getMaterial(0).Wireframe);
+    terrain->setMaterialFlag(video::EMF_POINTCLOUD, false);
 
 	/*
 	To be able to look at and move around in this scene, we create a first
 	person shooter style camera and make the mouse cursor invisible.
 	*/
-    //smgr->addCameraSceneNodeFPS();
-    smgr->addCameraSceneNode(0, core::vector3df(0,-1500,-1000), core::vector3df(0,1000,1000));
-    //device->getCursorControl()->setVisible(false);
+    //scene::ICameraSceneNode* camera=smgr->addCameraSceneNodeFPS();
+    scene::ICameraSceneNode* camera=smgr->addCameraSceneNode(0, core::vector3df(0,0,-5000), core::vector3df(5000,5000,0));
+    //camera->setRotation(core::vector3df(0,0,0.0f));
+    device->getCursorControl()->setVisible(false);
+    camera->setFarValue(142000.0f);
 
 	int lastFPS = -1;
 
@@ -130,7 +160,7 @@ int main()
 	u32 then = device->getTimer()->getTime();
 
 	// This is the movemen speed in units per second.
-	const f32 MOVEMENT_SPEED = 5.f;
+    const f32 MOVEMENT_SPEED = 100.f;
 
 	while(device->run())
 	{
@@ -141,7 +171,7 @@ int main()
 
         g_elpstime += frameDeltaTime;
 
-        if( g_elpstime>(g_intstep/1000.0f) )
+        if( g_elpstime>(0.003f/*g_intstep/10000.0f*/) )
         {
             //output
             float x=f16_Y.Xg[0];
@@ -155,7 +185,7 @@ int main()
             f16_step();
 
             anms->setRotation(core::vector3df(mu*57.3+180,gamma*57.3,psi*57.3));
-            anms->setPosition(core::vector3df(x,y,z+1000));
+            anms->setPosition(core::vector3df(x+5000,y+5000,z));
 
             g_elpstime=0;
         }
