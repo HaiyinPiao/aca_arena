@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
         f16[i].actor_P.xg0_Value[0] = rand()%7000;
         f16[i].actor_P.xg0_Value[1] = -20000+rand()%27000;
         f16[i].actor_P.xg0_Value[2] = -1*(rand()%10000);
+        f16[i].actor_P.att_g0_Value[1] = (-90.0f+float(rand()%180))/57.3f;
         f16[i].actor_P.att_g0_Value[2] = (-180.0f+float(rand()%360))/57.3f;
     }
 
@@ -225,6 +226,7 @@ int main(int argc, char *argv[])
                 f16[i].actor_P.xg0_Value[0] = rand()%7000;
                 f16[i].actor_P.xg0_Value[1] = -20000+rand()%27000;
                 f16[i].actor_P.xg0_Value[2] = -1*(rand()%10000);
+                f16[i].actor_P.att_g0_Value[1] = (-90.0f+float(rand()%180))/57.3f;
                 f16[i].actor_P.att_g0_Value[2] = (-180.0f+float(rand()%360))/57.3f;
             }
 
