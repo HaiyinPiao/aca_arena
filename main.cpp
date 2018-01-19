@@ -13,12 +13,7 @@ haiyinpiao@qq.com
 #include <cstdio>
 #include <ctime>
 #include <iostream>
-
-
-extern "C"
-{
-#include "f16-hrt/f16.h"
-}
+#include "actor_grt_rtw/actor.h"
 
 using namespace std;
 using namespace irr;
@@ -27,6 +22,11 @@ using namespace irr;
 const float g_intstep=30;
 
 float g_elpstime=0;
+
+int MAXSTEPRELOAD=50;
+int g_reloadstep=0;
+
+const int ACTOR_NUM = 50;
 
 class MyEventReceiver : public IEventReceiver
 {
@@ -60,12 +60,24 @@ private:
 
 int main(int argc, char *argv[])
 {
-    f16_initialize();
+    actorModelClass f16[ACTOR_NUM];
 
-    // input
-    f16_U.n_nc = 1.3f;
-    f16_U.n_xc = 1.0f;
-    f16_U.mu_dotc = 0.0f;
+    for(int i=0; i<ACTOR_NUM; i++)
+    {
+        f16[i].initialize();
+
+        // input
+        f16[i].actor_U.nnk_c = float(rand()%5000)/5000.0f;
+        f16[i].actor_U.nxk_c = float(rand()%1000)/1000.0f;
+        f16[i].actor_U.mudot_c = float(rand()%700)/1000.0f;
+
+        // initial condition
+        f16[i].actor_P.xg0_Value[0] = rand()%7000;
+        f16[i].actor_P.xg0_Value[1] = -20000+rand()%27000;
+        f16[i].actor_P.xg0_Value[2] = -1*(rand()%10000);
+        f16[i].actor_P.att_g0_Value[2] = (-180.0f+float(rand()%360))/57.3f;
+    }
+
 
     // holds the simulation steps
     unsigned int k=0;
@@ -88,31 +100,37 @@ int main(int argc, char *argv[])
     scene::ISceneNode* plight_node = smgr->addLightSceneNode(0, core::vector3df(10000,10000,10000),
                                                              video::SColorf(1.0f, 0.6f, 0.7f, 1.0f), 1000000.0f);
 
-	scene::IAnimatedMeshSceneNode* anms =
-        smgr->addAnimatedMeshSceneNode(smgr->getMesh("../aca_arena/T50-airframe.3ds"));
+    scene::IAnimatedMeshSceneNode* anms[ACTOR_NUM];
 
-	if (anms)
-	{
-        anms->setMaterialTexture(0, driver->getTexture("../aca_arena/T50-airframe.png"));
-        /*scene::ISceneNodeAnimator* anim =
-            smgr->createFlyCircleAnimator(core::vector3df(0,0,1), 10.0f);
-        if (anim)
+    for(int i=0; i<ACTOR_NUM; i++)
+    {
+        anms[i] =
+            smgr->addAnimatedMeshSceneNode(smgr->getMesh("../aca_arena/T50-airframe.3ds"));
+
+        if (anms[i])
         {
-            anms->addAnimator(anim);
-            anim->drop();
-        }*/
+            anms[i]->setMaterialTexture(0, driver->getTexture("../aca_arena/T50-airframe.png"));
+            /*scene::ISceneNodeAnimator* anim =
+                smgr->createFlyCircleAnimator(core::vector3df(0,0,1), 10.0f);
+            if (anim)
+            {
+                anms->addAnimator(anim);
+                anim->drop();
+            }*/
 
-        anms->setMaterialFlag(video::EMF_LIGHTING, false);
+            anms[i]->setMaterialFlag(video::EMF_LIGHTING, false);
 
-		anms->setFrameLoop(0, 13);
-		anms->setAnimationSpeed(15);
+            anms[i]->setFrameLoop(0, 13);
+            anms[i]->setAnimationSpeed(15);
 
-        anms->setScale(core::vector3df(2000.f,2000.f,2000.f));
-        /*anms->setRotation(core::vector3df(0,0,0));
-        anms->setPosition(core::vector3df(0,0,0));*/
-//		anms->setMaterialTexture(0, driver->getTexture("../../media/sydney.bmp"));
+            anms[i]->setScale(core::vector3df(2000.f,2000.f,2000.f));
+            /*anms->setRotation(core::vector3df(0,0,0));
+            anms->setPosition(core::vector3df(0,0,0));*/
+    //		anms->setMaterialTexture(0, driver->getTexture("../../media/sydney.bmp"));
 
-	}
+        }
+    }
+
     scene::ITerrainSceneNode* terrain = smgr->addTerrainSceneNode(
                 "../irrlicht-1.8.4/media/terrain-heightmap.bmp",
                 0,                  // parent node
@@ -167,23 +185,50 @@ int main(int argc, char *argv[])
 
         g_elpstime += frameDeltaTime;
 
+
         if( g_elpstime>(0.003f/*g_intstep/10000.0f*/) )
         {
-            //output
-            float x=f16_Y.Xg[0];
-            float y=f16_Y.Xg[1];
-            float z=f16_Y.Xg[2];
+            for(int i=0; i<ACTOR_NUM; i++)
+            {
+                //output
+                float x=f16[i].actor_Y.Xg[0];
+                float y=f16[i].actor_Y.Xg[1];
+                float z=f16[i].actor_Y.Xg[2];
 
-            float mu=f16_Y.attitude_g[0];
-            float gamma=f16_Y.attitude_g[1];
-            float psi=f16_Y.attitude_g[2];
+                float mu=f16[i].actor_Y.att_g[0];
+                float gamma=f16[i].actor_Y.att_g[1];
+                float psi=f16[i].actor_Y.att_g[2];
 
-            f16_step();
+                f16[i].step();
 
-            anms->setRotation(core::vector3df(mu*57.3+180,gamma*57.3,psi*57.3));
-            anms->setPosition(core::vector3df(x+5000,y+5000,z-2000));
+                anms[i]->setRotation(core::vector3df(mu*57.3+180,gamma*57.3,psi*57.3));
+                anms[i]->setPosition(core::vector3df(x+5000,y+5000,z-2000));
+            }
 
             g_elpstime=0;
+            g_reloadstep++;
+        }
+
+        //re-initialize
+        if( g_reloadstep>MAXSTEPRELOAD )
+        {
+            for(int i=0; i<ACTOR_NUM; i++)
+            {
+                f16[i].initialize();
+
+                // input
+                f16[i].actor_U.nnk_c = float(rand()%5000)/5000.0f;
+                f16[i].actor_U.nxk_c = float(rand()%1000)/1000.0f;
+                f16[i].actor_U.mudot_c = float(rand()%700)/1000.0f;
+
+                // initial condition
+                f16[i].actor_P.xg0_Value[0] = rand()%7000;
+                f16[i].actor_P.xg0_Value[1] = -20000+rand()%27000;
+                f16[i].actor_P.xg0_Value[2] = -1*(rand()%10000);
+                f16[i].actor_P.att_g0_Value[2] = (-180.0f+float(rand()%360))/57.3f;
+            }
+
+            g_reloadstep=0;
         }
 
         driver->beginScene(true, true, video::SColor(80,80,80,80));
@@ -220,7 +265,10 @@ int main(int argc, char *argv[])
 	*/
 	device->drop();
 
-    f16_terminate();
+    for(int i=0; i<ACTOR_NUM; i++)
+    {
+        f16[i].terminate();
+    }
 	
 	return 0;
 }

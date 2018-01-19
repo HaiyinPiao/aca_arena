@@ -1,11 +1,11 @@
 /*
  * multiword_types.h
  *
- * Code generation for model "f16".
+ * Code generation for model "actor".
  *
- * Model version              : 1.1162
+ * Model version              : 1.1483
  * Simulink Coder version : 8.11 (R2016b) 25-Aug-2016
- * C source code generated on : Tue Jan  9 21:21:58 2018
+ * C++ source code generated on : Fri Jan 19 11:20:06 2018
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -17,12 +17,6 @@
 #ifndef MULTIWORD_TYPES_H
 #define MULTIWORD_TYPES_H
 #include "rtwtypes.h"
-
-/*
- * Definitions supporting external data access
- */
-typedef int32_T chunk_T;
-typedef uint32_T uchunk_T;
 
 /*
  * MultiWord supporting definitions
