@@ -4,15 +4,15 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 
-INCLUDEPATH += /home/haiyin/software/matlab/extern/include\
-INCLUDEPATH += /home/haiyin/software/matlab/simulink/include\
-INCLUDEPATH += /home/haiyin/software/matlab/rtw/c/src\
-INCLUDEPATH += /home/haiyin/code_repo/aca_arena/actor_grt_rtw
+#INCLUDEPATH += /home/haiyin/software/matlab/extern/include\
+#INCLUDEPATH += /home/haiyin/software/matlab/simulink/include\
+#INCLUDEPATH += /home/haiyin/software/matlab/rtw/c/src\
+#INCLUDEPATH += /home/haiyin/code_repo/aca_arena/actor_grt_rtw
 
-#INCLUDEPATH += /usr/local/MATLAB/R2016b/extern/include\
-#INCLUDEPATH += /usr/local/MATLAB/R2016b/simulink/include\
-#INCLUDEPATH += /usr/local/MATLAB/R2016b/rtw/c/src\
-#INCLUDEPATH += /home/haiyinpiao/code_repo/aca_arena/actor_grt_rtw
+INCLUDEPATH += /usr/local/MATLAB/R2016b/extern/include\
+INCLUDEPATH += /usr/local/MATLAB/R2016b/simulink/include\
+INCLUDEPATH += /usr/local/MATLAB/R2016b/rtw/c/src\
+INCLUDEPATH += /home/haiyinpiao/code_repo/aca_arena/actor_grt_rtw
 
 INCLUDEPATH += ../irrlicht-1.8.4/include
 LIBS += -L../irrlicht-1.8.4/lib/Linux \

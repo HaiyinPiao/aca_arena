@@ -23,7 +23,7 @@ const float g_intstep=30;
 
 float g_elpstime=0;
 
-int MAXSTEPRELOAD=50;
+int MAXSTEPRELOAD=200;
 int g_reloadstep=0;
 
 const int ACTOR_NUM = 50;
@@ -67,14 +67,17 @@ int main(int argc, char *argv[])
         f16[i].initialize();
 
         // input
-        f16[i].actor_U.nnk_c = float(rand()%5000)/5000.0f;
+        f16[i].actor_U.nnk_c = float(rand()%5000)/1000.0f;
         f16[i].actor_U.nxk_c = float(rand()%1000)/1000.0f;
-        f16[i].actor_U.mudot_c = float(rand()%700)/1000.0f;
+        f16[i].actor_U.mudot_c = float(rand()%1000)/1000.0f;
 
         // initial condition
         f16[i].actor_P.xg0_Value[0] = rand()%7000;
         f16[i].actor_P.xg0_Value[1] = -20000+rand()%27000;
         f16[i].actor_P.xg0_Value[2] = -1*(rand()%10000);
+        /*f16[i].actor_P.xg0_Value[0] = 0;
+        f16[i].actor_P.xg0_Value[1] = 0;
+        f16[i].actor_P.xg0_Value[2] = -1000;*/
         f16[i].actor_P.att_g0_Value[1] = (-90.0f+float(rand()%180))/57.3f;
         f16[i].actor_P.att_g0_Value[2] = (-180.0f+float(rand()%360))/57.3f;
     }
@@ -203,14 +206,14 @@ int main(int argc, char *argv[])
                 f16[i].step();
 
                 anms[i]->setRotation(core::vector3df(mu*57.3+180,gamma*57.3,psi*57.3));
-                anms[i]->setPosition(core::vector3df(x+5000,y+5000,z-2000));
+                anms[i]->setPosition(core::vector3df(x+5000,y+5000,z/*-2000*/));
             }
 
             g_elpstime=0;
             g_reloadstep++;
         }
 
-        //re-initialize
+        /*//re-initialize
         if( g_reloadstep>MAXSTEPRELOAD )
         {
             for(int i=0; i<ACTOR_NUM; i++)
@@ -218,9 +221,9 @@ int main(int argc, char *argv[])
                 f16[i].initialize();
 
                 // input
-                f16[i].actor_U.nnk_c = float(rand()%5000)/5000.0f;
+                f16[i].actor_U.nnk_c = float(rand()%5000)/1000.0f;
                 f16[i].actor_U.nxk_c = float(rand()%1000)/1000.0f;
-                f16[i].actor_U.mudot_c = float(rand()%700)/1000.0f;
+                f16[i].actor_U.mudot_c = 0;
 
                 // initial condition
                 f16[i].actor_P.xg0_Value[0] = rand()%7000;
@@ -231,6 +234,28 @@ int main(int argc, char *argv[])
             }
 
             g_reloadstep=0;
+        }*/
+
+        //re-initialize TAS<30m/s or h<0 entity
+        for( int i=0; i<ACTOR_NUM; i++ )
+        {
+            // post stall or hit ground, entity should get eliminated
+            if( f16[i].actor_Y.TAS<30 || f16[i].actor_Y.Xg[2]>0.0f )
+            {
+                f16[i].initialize();
+
+                // input
+                f16[i].actor_U.nnk_c = float(rand()%5000)/1000.0f;
+                f16[i].actor_U.nxk_c = float(rand()%1000)/1000.0f;
+                f16[i].actor_U.mudot_c = 0;
+
+                // initial condition
+                f16[i].actor_P.xg0_Value[0] = rand()%7000;
+                f16[i].actor_P.xg0_Value[1] = -20000+rand()%27000;
+                f16[i].actor_P.xg0_Value[2] = -1*(rand()%10000);
+                f16[i].actor_P.att_g0_Value[1] = (-90.0f+float(rand()%180))/57.3f;
+                f16[i].actor_P.att_g0_Value[2] = (-180.0f+float(rand()%360))/57.3f;
+            }
         }
 
         driver->beginScene(true, true, video::SColor(80,80,80,80));
